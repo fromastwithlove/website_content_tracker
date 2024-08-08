@@ -8,12 +8,19 @@ import hashlib
 import sys
 from bs4 import BeautifulSoup
 import requests
+import os
 
 URL = "https://www.stadt-koeln.de/service/produkte/00547/index.html"
 DEBUG_URL = "http://localhost:8000"
 
-WEBSITE_HASH = "tmp/website_hash.md5"
-WEBSITE_CONTENT = "tmp/website_content.txt"
+# Get the directory where the script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+WEBSITE_HASH = os.path.join(SCRIPT_DIR, 'tmp', 'website_hash.md5')
+WEBSITE_CONTENT = os.path.join(SCRIPT_DIR, 'tmp', 'website_content.txt')
+
+# Ensure the 'tmp' directory exists
+os.makedirs('tmp', exist_ok=True)
 
 def get_website_content(url):
     response = requests.get(url)
@@ -66,7 +73,7 @@ if __name__ == "__main__":
             with open(WEBSITE_HASH, 'r') as file:
                 old_hash = file.read().strip()
         except FileNotFoundError:
-            old_hash = ''
+            old_hash = None
         
         if old_hash is None:
             # First run, save the content and hash without triggering a change
@@ -94,6 +101,7 @@ if __name__ == "__main__":
             
             sys.exit(1)
         else:
+            print("No changes detected.")
             sys.exit(0)
     except Exception as e:
         print(f"Error checking website: {e}")

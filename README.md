@@ -30,7 +30,7 @@ Configure monit in `monitrc`:
 ```
 ## Check custom program status output.
 #
-  check program stadt-koeln-tracker with path /home/adil/website_content_tracker/tracker.py
+  check program stadt-koeln-tracker with path "/home/adil/website_content_tracker/venv/bin/python /home/adil/website_content_tracker/tracker.py"
      if status != 0 then alert
 #
 #
