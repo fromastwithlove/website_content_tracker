@@ -59,7 +59,7 @@ def print_diff(old_content, new_content):
 if __name__ == "__main__":
     try:
         print(f"Monitoring {URL} for changes...")
-        current_content = get_website_content(DEBUG_URL)
+        current_content = get_website_content(URL) # Use DEBUG_URL for debugging
         current_hash = hash_content(current_content)
 
         try:

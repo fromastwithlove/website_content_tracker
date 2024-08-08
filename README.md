@@ -23,11 +23,15 @@ Execute the script:
 ## Deploy and run it using [monit](https://mmonit.com/monit/documentation/monit.html#Program) on the server
 
 Make script executable:
-`chmod +x check_website.py`
+`sudo chmod +x tracker.py`
 
 Configure monit in `monitrc`:
 
 ```
-check program tracker with path "~/tracker.py"
-    if status != 0 then alert
+## Check custom program status output.
+#
+  check program stadt-koeln-tracker with path /home/adil/website_content_tracker/tracker.py
+     if status != 0 then alert
+#
+#
 ```
