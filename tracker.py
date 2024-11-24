@@ -3,7 +3,6 @@
 # 2024-08-08
 # Author: adil.yergaliyev@gmail.com
 
-import difflib
 import hashlib
 import sys
 from bs4 import BeautifulSoup
@@ -24,6 +23,7 @@ os.makedirs('tmp', exist_ok=True)
 
 def get_website_content(url):
     response = requests.get(url)
+    response.encoding = 'utf-8'
     soup = BeautifulSoup(response.text, 'html.parser')
     # Extract text content
     text_content = soup.get_text()
@@ -32,36 +32,17 @@ def get_website_content(url):
 def hash_content(content):
     return hashlib.md5(content.encode('utf-8')).hexdigest()
 
-def print_diff(old_content, new_content):
-    diff = difflib.unified_diff(
-        old_content.splitlines(), 
-        new_content.splitlines(), 
-        lineterm=''
-    )
-    
-    removed_lines = []
-    added_lines = []
+def prepare_email_content(old_content, new_content):
+    old_lines = set(old_content.splitlines())
+    new_lines = set(new_content.splitlines())
+    added_lines = new_lines - old_lines
 
-    for line in diff:
-        if line.startswith('-'):
-            line_content = line[1:].strip()
-            if line_content:  # Add non-empty lines
-                removed_lines.append(f"\033[91m{line_content}\033[0m")  # Red for removed lines
-        elif line.startswith('+'):
-            line_content = line[1:].strip()
-            if line_content:  # Add non-empty lines
-                added_lines.append(f"\033[92m{line_content}\033[0m")  # Green for added lines
-
-    if removed_lines or added_lines:
-        print("Changes detected:\n")
-        if removed_lines:
-            print("Removed Content:")
-            print("\n".join(removed_lines))
-        if added_lines:
-            print("\nAdded Content:")
-            print("\n".join(added_lines))
+    if added_lines:
+        email_body = "New content detected on the monitored website:\n\n"
+        email_body += "\n".join(line.strip() for line in added_lines if line.strip())
+        return email_body
     else:
-        print("No significant changes detected.")
+        return "No new content added."
 
 if __name__ == "__main__":
     try:
@@ -86,13 +67,15 @@ if __name__ == "__main__":
         
         if current_hash != old_hash:
             print("Website content has changed :)")
-            
+
             with open(WEBSITE_CONTENT, 'r') as file:
                 old_content = file.read().strip()
             
-            # Print only the differences with color coding
-            print_diff(old_content, current_content)
-                            
+            # Prepare email-friendly content
+            email_body = prepare_email_content(old_content, current_content)
+            print(email_body)
+
+            # Save the new hash and content
             with open(WEBSITE_HASH, 'w') as file:
                 file.write(current_hash)
             
